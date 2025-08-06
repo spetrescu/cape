@@ -531,7 +531,7 @@
 					<div class="self-center mx-1.5">
 						<img
 							crossorigin="anonymous"
-							src="{WEBUI_BASE_URL}/static/favicon.png"
+							src="/static/favicon.png"
 							class="sidebar-new-chat-icon size-5 -translate-x-1.5 rounded-full"
 							alt="logo"
 						/>
@@ -696,7 +696,7 @@
 										<img
 											crossorigin="anonymous"
 											src={model?.info?.meta?.profile_image_url ??
-												`${WEBUI_BASE_URL}/static/favicon.png`}
+												`static/favicon.png`}
 											class=" size-5 rounded-full -translate-x-[0.5px]"
 											alt="logo"
 										/>
