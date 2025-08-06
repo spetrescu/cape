@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import quote
 
+import tempfile
+import subprocess
+from pathlib import Path
+import whisper
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -155,6 +160,52 @@ def upload_file(
         )
         if process:
             try:
+                log.info(f"Video upload triggered: {file.content_type}")
+                if file.content_type:
+                    if file.content_type == "video/mp4":
+                        file_path = Storage.get_file(file_path)
+
+                        # Transcribe audio
+                        transcript = process_mp4_audio_with_whisper(file_path)
+
+                        # Extract frames & get image analysis
+                        image_descriptions = extract_frames_and_query_api(file_path)
+                        log.info(f"Image API returned: {image_descriptions}")
+
+                        # Ensure the result is a list of exactly 2 strings
+                        if isinstance(image_descriptions, str):
+                            image_descriptions = [image_descriptions]
+
+                        # Truncate or pad the list to exactly 2 elements
+                        while len(image_descriptions) < 2:
+                            image_descriptions.append("No description available.")
+                        if len(image_descriptions) > 2:
+                            image_descriptions = image_descriptions[:2]
+
+                        formatted_image_descriptions = "\n".join(
+                            f"Frame {i+1}: {desc}" for i, desc in enumerate(image_descriptions)
+                        )
+
+                        # Combine transcript + image insights
+                        combined_result = f"Transcription:\n{transcript}\n\nImage Insights:\n{formatted_image_descriptions}"
+
+                        process_file(
+                            request,
+                            ProcessFileForm(file_id=id, content=combined_result),
+                            user=user,
+                        )
+                if file.content_type == "image/png": # ["image/jpeg", "image/png", "image/jpg"]:
+                    log.info("Processing image file via BLIP captioning...")
+                    file_path = Storage.get_file(file_path)
+                    caption = process_image_captioning(file_path)
+                    log.info(
+                        f"Caption {caption}"
+                    )
+                    process_file(
+                        request,
+                        ProcessFileForm(file_id=id, content=caption),
+                        user=user,
+                    )        
                 if file.content_type:
                     stt_supported_content_types = getattr(
                         request.app.state.config, "STT_SUPPORTED_CONTENT_TYPES", []
@@ -629,3 +680,109 @@ async def delete_file_by_id(id: str, user=Depends(get_verified_user)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=ERROR_MESSAGES.NOT_FOUND,
         )
+
+def process_mp4_audio_with_whisper(file_path: str) -> str:
+    """
+    Extract audio from .mp4 and transcribe using Whisper.
+    """
+    with tempfile.TemporaryDirectory() as temp_dir:
+        audio_path = Path(temp_dir) / "audio.wav"
+
+        try:
+            # Extract audio using ffmpeg
+            subprocess.run([
+                "ffmpeg", "-i", file_path,
+                "-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1",
+                str(audio_path), "-hide_banner", "-loglevel", "error"
+            ], check=True)
+
+            # Transcribe with Whisper
+            model = whisper.load_model("base")
+            result = model.transcribe(str(audio_path))
+            return result.get("text", "")
+        except Exception as e:
+            log.exception(f"Whisper transcription failed: {e}")
+            return ""
+
+from PIL import Image
+from transformers import BlipProcessor, BlipForConditionalGeneration
+
+def process_image_captioning(file_path: str) -> str:
+    """
+    Generate a caption for an image using BLIP.
+    """
+    try:
+        processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+        model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
+        raw_image = Image.open(file_path).convert('RGB')
+        inputs = processor(raw_image, return_tensors="pt")
+
+        out = model.generate(**inputs, max_length=64)
+        caption = processor.decode(out[0], skip_special_tokens=True)
+        return caption
+
+    except Exception as e:
+        log.exception(f"Image captioning failed: {e}")
+        return "Image could not be processed."
+
+import base64
+import requests
+
+def extract_frames_and_query_api(file_path: str, num_frames: int = 2) -> list[str]:
+    """
+    Extract frames from a video, send them to an image-processing API, and return the response.
+    """
+    with tempfile.TemporaryDirectory() as temp_dir:
+        encoded_images = []
+
+        for i in range(num_frames):
+            frame_path = Path(temp_dir) / f"frame_{i}.jpg"
+            try:
+                # Extract frame at 2s, 4s, etc. — adjust timing if needed
+                subprocess.run([
+                    "ffmpeg", "-i", file_path,
+                    "-ss", str((i + 1) * 2),  # 2s, 4s, etc.
+                    "-vframes", "1",
+                    str(frame_path),
+                    "-hide_banner", "-loglevel", "error"
+                ], check=True)
+
+                # Convert to base64 data URI
+                with open(frame_path, "rb") as f:
+                    encoded = base64.b64encode(f.read()).decode("utf-8")
+                    mime_type = "image/jpeg"  # default to JPEG
+                    encoded_images.append(f"data:{mime_type};base64,{encoded}")
+
+            except Exception as e:
+                log.exception(f"Error extracting frame {i+1}")
+                continue
+
+        # Send to external API
+        try:
+            url = "http://localhost:5005/query"
+            headers = {"Content-Type": "application/json"}
+            data = {
+                "text": "Describe each attached image especially for potential debugging and system diagnosis.",
+                "images": encoded_images
+            }
+
+            response = requests.post(url, headers=headers, json=data)
+            if response.ok:
+                json_response = response.json()
+                raw_result = json_response.get("response", "")
+                log.info(f"Raw image API response: {raw_result}")
+
+                if isinstance(raw_result, str):
+                    return [raw_result]
+                elif isinstance(raw_result, list):
+                    return raw_result
+                else:
+                    log.warning("Unexpected image API response format.")
+                    return ["Unexpected format", "No additional description."]
+            else:
+                log.error(f"API error: {response.status_code} - {response.text}")
+                return ["API request failed"]
+        except Exception as e:
+            log.exception("Failed to send request to image analysis API")
+            return ["Image API error"]
