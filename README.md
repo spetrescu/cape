@@ -52,7 +52,7 @@ Now, in another terminal, pull Gemma3n:e2b (5.6 GB download):
 ```bash
 ollama pull gemma3n:e2b
 ```
-If you have capacity on your machine you can also pull the bigger Gemma3n model, namely by running `ollama pull gemma3n:e4b`.
+If you have capacity on your machine you can also pull the bigger Gemma3n model, namely by running `ollama pull gemma3n:e4b` (7.5 GB download).
 
 6. Install Python Dependencies
 From the backend directory:
