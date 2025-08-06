@@ -1,6 +1,8 @@
 # 🦸 CAPE
 
-This guide walks you through installing and running Cape. There are essentially three main stages for fully deploying Cape:
+This guide walks you through installing and running Cape. We tested the current setup on a Mac equipped with an Apple M1 Pro chip (10-core CPU), 32 GB of RAM, and a 1 TB SSD.
+
+There are essentially three main stages for fully deploying Cape:
 1. Configuring the OpenWebUI-based Frontend (step 1/3) - by this point you'll not be able to interface yet locally with Gemma3n
 2. Configuring the UI OpenWebUI Backend and Ollama (step 2/3) - by this point you'll be able to interface locally with Gemma3n (text only)
 3. Configuring a custom inference server that hosts Gemma3n in full precision via HuggingFace (step 3/3) - at this point Cape will be able to use Gemma3n locally to process images and videos
@@ -37,6 +39,7 @@ Start the frontend development server:
 ```bash
 npm run dev
 ```
+You should see the frontend running at `http://localhost:5173/`.
 
 ## 2. Configuring the UI OpenWebUI Backend and Ollama (step 2/3)
 ### 2.1 Set up the OpenWebUI backend
@@ -130,3 +133,6 @@ Response: {
   'response': "Here's a brief description of each attached image, focusing on aspects relevant for potential debugging and system diagnosis:\n\n**Image 1: Network Equipment**\n\nThis image shows two pieces of network equipment connected via cables.\n\n* **Left Unit (Black Box):** This appears to be a network switch or router. Key observations:\n    * **Ethernet Ports:** Multiple yellow Ethernet cables are connected to its ports, indicating network connectivity.\n    * **USB Port:** A USB port is visible, which could be for connecting peripherals or for certain functionalities.\n    * **Power Cable:** A black power cable is plugged into the unit.\n    * **Labels:** There are labels indicating \"LAN,\" \"CABLE,\" and \"POWER.\" \n\n* **Right Unit (White Box):** This is a device with several Ethernet ports and LEDs. Key observations:\n    * **Ethernet Ports:** Multiple yellow Ethernet cables are connected to its ports.\n    * **LED Indicators:** Several LEDs are lit up, which are crucial for monitoring the device's status (link status, activity, etc.). The specific meaning of the LEDs might be found in the device's manual.\n    * **Power Cable:** A black power cable is plugged into the..."
 }
 ```
+
+### Play with the interface
+By this point, you should have the following processes running: the `OpenWebUI` frontend, `ollama` running, the `OpenWebUI` backend running, and the `gemma3n_inference_server`. If so, you should now be able to interact with Cape with all the implemented functionality to date - navigate to `http://localhost:5173/`.
