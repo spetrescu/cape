@@ -1025,32 +1025,25 @@ except Exception as e:
 if default_prompt_suggestions == []:
     default_prompt_suggestions = [
         {
-            "title": ["Help me study", "vocabulary for a college entrance exam"],
-            "content": "Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
+            "title": ["What do DIP switches do?", "and how do I configure them?"],
+            "content": "Can you explain what DIP switches are used for and how to set them correctly?",
         },
         {
-            "title": ["Give me ideas", "for what to do with my kids' art"],
-            "content": "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
+            "title": ["Common signs of hardware issues", "and how to spot them"],
+            "content": "What are the typical symptoms of a hardware malfunction, and how can I identify them early?",
         },
         {
-            "title": ["Tell me a fun fact", "about the Roman Empire"],
-            "content": "Tell me a random fun fact about the Roman Empire",
+            "title": ["How to interpret error codes", "on control panels or displays"],
+            "content": "What's the best way to decode and troubleshoot error messages on electronic equipment?",
         },
         {
-            "title": ["Show me a code snippet", "of a website's sticky header"],
-            "content": "Show me a code snippet of a website's sticky header in CSS and JavaScript.",
+            "title": ["Wiring mistakes to avoid", "in control systems"],
+            "content": "What are the most common wiring errors in circuit boards or control systems, and how can I avoid them?",
         },
         {
-            "title": [
-                "Explain options trading",
-                "if I'm familiar with buying and selling stocks",
-            ],
-            "content": "Explain options trading in simple terms if I'm familiar with buying and selling stocks.",
-        },
-        {
-            "title": ["Overcome procrastination", "give me tips"],
-            "content": "Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?",
-        },
+            "title": ["Quick guide to reading technical manuals", "effectively"],
+            "content": "How can I quickly understand the most important setup and safety info in a technical manual?",
+        }
     ]
 
 DEFAULT_PROMPT_SUGGESTIONS = PersistentConfig(
