@@ -65,4 +65,5 @@ Make sure the Python version in use is `3.11` (check with `python --version`).
 ```bash
 sh dev.sh
 ```
+Navigate to `http://localhost:5173/` to see the application running.
 
