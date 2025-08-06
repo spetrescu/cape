@@ -186,10 +186,15 @@
 		>
 			<div class="w-full px-10 min-h-screen flex flex-col text-center">
 				{#if ($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false}
-					<div class=" my-auto pb-10 w-full sm:max-w-md">
-						<div
-							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-semibold dark:text-gray-200"
-						>
+					<div class="my-auto pb-15 w-full sm:max-w-md flex flex-col items-center">
+						<img
+							src="/static/logo.png"
+							alt="Logo"
+							class="mb-4 h-12 w-auto"
+							loading="lazy"
+						/>
+
+						<div class="flex items-center justify-center gap-3 text-xl sm:text-2xl font-semibold dark:text-gray-200">
 							<div>
 								{$i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: $WEBUI_NAME })}
 							</div>
