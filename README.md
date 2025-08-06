@@ -83,7 +83,7 @@ Navigate to `http://localhost:5173/` to see the application running. At this sta
 The goal here is to host the Gemma 3n model locally via Hugging Face's transformers library (with proper authentication and access rights) in full precision using  Flask API. The purpose here is to use the multimodal functionality, as Ollama does not support it, at least as of 7 Aug 2025.
 - Make sure you have a working Hugging Face token (in order to download models), and that also you have applied to get access to Gemma3n models (link here: [https://huggingface.co/google/gemma-3n-E2B-it](https://huggingface.co/google/gemma-3n-E2B-it)). Click "Access repository" to request permission from Google (required even for open weights).
 
-### 3.1 Create and Activate Python Virtual Environment
+### 3.1 Create and Activate Python Virtual Environment  (Python 3.13 required)
 ```bash
 cd cape/src/gemma3n-inference-server
 ```
